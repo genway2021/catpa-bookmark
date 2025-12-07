@@ -31,7 +31,6 @@ interface LinkGridProps {
 }
 
 const IconRender = ({ name, className }: { name: string; className?: string }) => {
-  // 支持图片链接
   if (name?.startsWith("http") || name?.startsWith("/")) {
     /* eslint-disable-next-line @next/next/no-img-element */
     return <img src={name} alt="icon" className={`${className} object-contain rounded-sm`} style={{ width: '100%', height: '100%' }} />;
@@ -67,17 +66,16 @@ function SortableCard({ category, onClick }: { category: Category; onClick: () =
       onClick={onClick}
       className="cursor-pointer group relative transition-transform duration-200 hover:scale-105 active:scale-95 touch-none"
     >
-      <div className="aspect-video w-full rounded-2xl bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 shadow-lg group-hover:bg-white/15 transition-colors overflow-hidden flex flex-col items-center justify-center gap-2 will-change-transform">
-        {/* 图标容器 */}
-        <div className="p-3 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/10 shadow-inner">
-          {/* 修改：使用动态图标，默认为 FolderOpen */}
-          <IconRender name={category.icon || "FolderOpen"} className="h-8 w-8 text-yellow-200/90 drop-shadow-md" />
+      <div className="aspect-video w-full rounded-2xl bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 shadow-lg group-hover:bg-white/15 transition-colors overflow-hidden flex flex-col items-center justify-center gap-1 will-change-transform">
+        
+        <div className="mb-1 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1">
+          <IconRender name={category.icon || "FolderOpen"} className="h-10 w-10 text-yellow-200/90 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)]" />
         </div>
-        <div className="text-center">
-          <h3 className="text-white font-medium tracking-wide drop-shadow-sm">{category.title}</h3>
-          <span className="text-[10px] text-white/50 uppercase tracking-wider font-semibold block mt-1">
-            {category.links.length} Links
-          </span>
+        
+        <div className="text-center px-4 w-full">
+          <h3 className="text-white font-medium tracking-wide drop-shadow-sm truncate text-lg">
+            {category.title}
+          </h3>
         </div>
       </div>
     </div>
@@ -152,21 +150,21 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
               className="w-full max-w-5xl max-h-[85vh] bg-zinc-900 border border-white/10 rounded-[1.5rem] shadow-xl overflow-hidden flex flex-col relative z-10 will-change-transform"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0 bg-zinc-900">
+              {/* 修复：压缩标题栏高度 */}
+              <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 shrink-0 bg-zinc-900">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-yellow-500/20 text-yellow-200">
-                     {/* 模态框标题也使用自定义图标 */}
-                     <IconRender name={selectedCategory.icon || "FolderOpen"} className="h-6 w-6" />
+                  <div className="p-1.5 rounded-xl bg-yellow-500/20 text-yellow-200">
+                     <IconRender name={selectedCategory.icon || "FolderOpen"} className="h-5 w-5" />
                   </div>
-                  <h2 className="text-2xl font-semibold text-white tracking-tight">
+                  <h2 className="text-lg font-semibold text-white tracking-tight">
                     {selectedCategory.title}
                   </h2>
                 </div>
                 <button
                   onClick={() => setSelectedId(null)}
-                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                  className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 

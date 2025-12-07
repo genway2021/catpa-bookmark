@@ -66,7 +66,6 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
   const [newCategory, setNewCategory] = useState("");
   const [newIcon, setNewIcon] = useState("Link");
   
-  // 新建文件夹相关状态
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   
@@ -232,12 +231,12 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                       value={newUrl} 
                       onChange={e => setNewUrl(e.target.value)} 
                       onBlur={() => handleSmartIdentify(true)} 
-                      className="h-9" 
+                      className="h-9" // 恢复 h-9
                     />
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="h-9 w-9 shrink-0" 
+                      className="h-9 w-9 shrink-0" // 恢复 h-9
                       onClick={() => handleSmartIdentify(false)} 
                       title="强制识别标题和图标"
                     >
@@ -254,7 +253,7 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                       placeholder="标题" 
                       value={newTitle} 
                       onChange={e => setNewTitle(e.target.value)} 
-                      className="h-9 flex-1" 
+                      className="h-9 flex-1" // 恢复 h-9
                     />
                     
                     <DropdownMenu>
@@ -263,14 +262,14 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                           <IconRender name={newIcon} className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[540px] h-[400px] overflow-y-auto">
-                           <div className="grid grid-cols-10 gap-1 p-2">
+                      <DropdownMenuContent align="end" className="w-[85vw] sm:w-[540px] h-[400px] overflow-y-auto">
+                           <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 p-2">
                              {PRESET_ICONS.map(iconName => (
                                <Button
                                  key={iconName}
                                  variant="ghost"
                                  size="icon"
-                                 className="h-10 w-10 hover:bg-muted"
+                                 className="h-10 w-10 hover:bg-muted" // 恢复 h-10，方便点击
                                  onClick={() => setNewIcon(iconName)}
                                  title={iconName}
                                >
@@ -283,9 +282,7 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                   </div>
                 </div>
 
-                {/* 3. Category & Add Row - Modified Layout (6+6) */}
-                
-                {/* 左侧：选择分类 + 添加链接 (占一半) */}
+                {/* 3. Category & Add Row */}
                 <div className="col-span-12 sm:col-span-6 space-y-1.5">
                   <Label className="text-xs">添加到分类</Label>
                   <div className="flex gap-2">
@@ -294,17 +291,17 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                       placeholder="选择或输入分类" 
                       value={newCategory} 
                       onChange={e => setNewCategory(e.target.value)} 
-                      className="h-9 flex-1 min-w-0" // min-w-0 防止被挤压
+                      className="h-9 flex-1 min-w-0" // 恢复 h-9
                     />
                     <datalist id="cats">{existingCategories.map(c => <option key={c} value={c} />)}</datalist>
                     
-                    <Button onClick={handleAddLink} className="h-9 px-4 shrink-0 whitespace-nowrap">
-                      <Plus className="h-4 w-4 mr-1" /> 添加链接
+                    <Button onClick={handleAddLink} size="icon" className="h-9 w-9 shrink-0" title="添加链接">
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
 
-                {/* 右侧：新建文件夹 (占一半，与上方对齐) */}
+                {/* 4. New Folder Row */}
                 <div className="col-span-12 sm:col-span-6 space-y-1.5">
                    <Label className="text-xs">新建分类</Label>
                    
@@ -312,7 +309,7 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                        <Button 
                            variant="outline" 
                            onClick={() => setIsCreatingFolder(true)}
-                           className="w-full h-9 border-dashed hover:border-solid hover:bg-muted/50"
+                           className="w-full h-9 border-dashed hover:border-solid hover:bg-muted/50" // 恢复 h-9
                        >
                            <FolderPlus className="h-4 w-4 mr-2" /> 新建文件夹
                        </Button>
@@ -322,7 +319,7 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                                value={newFolderName}
                                onChange={e => setNewFolderName(e.target.value)}
                                placeholder="文件夹名"
-                               className="h-9 flex-1 min-w-0"
+                               className="h-9 flex-1 min-w-0" // 恢复 h-9
                                autoFocus
                                onKeyDown={(e) => {
                                    if (e.key === 'Enter') handleConfirmCreateFolder();
@@ -365,8 +362,8 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                                   <IconRender name={cat.icon || "FolderOpen"} className="h-3.5 w-3.5" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" className="w-[540px] h-[400px] overflow-y-auto">
-                                <div className="grid grid-cols-10 gap-1 p-2">
+                              <DropdownMenuContent align="start" className="w-[85vw] sm:w-[540px] h-[400px] overflow-y-auto">
+                                <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 p-2">
                                   {PRESET_ICONS.map(iconName => (
                                     <Button key={iconName} variant="ghost" size="icon" className="h-10 w-10 hover:bg-muted" onClick={() => handleCategoryIconChange(cat.id, iconName)} title={iconName}>
                                       <IconRender name={iconName} className="h-5 w-5" />
@@ -424,11 +421,11 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
             </div>
           </TabsContent>
 
-          {/* ... General and Github Tabs same as before ... */}
+          {/* ... General and Github Tabs same as before (restoring h-9) ... */}
           <TabsContent value="general" className="space-y-6 py-4 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
             <div className="space-y-2">
               <Label>网站标题</Label>
-              <Input value={localData.settings.title} onChange={e => setLocalData({...localData, settings: {...localData.settings, title: e.target.value}})} />
+              <Input value={localData.settings.title} onChange={e => setLocalData({...localData, settings: {...localData.settings, title: e.target.value}})} className="h-9" />
             </div>
             <div className="space-y-3 border border-border/50 p-4 rounded-xl bg-muted/30">
               <Label>壁纸模式</Label>
@@ -439,7 +436,7 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                     variant={localData.settings.wallpaperType === mode ? "default" : "outline"} 
                     size="sm" 
                     onClick={() => setLocalData({...localData, settings: {...localData.settings, wallpaperType: mode}})} 
-                    className="flex-1 capitalize"
+                    className="flex-1 capitalize h-9"
                   >
                     {mode === 'local' ? '本地' : mode === 'custom' ? '自定义 API' : 'Bing'}
                   </Button>
@@ -453,6 +450,7 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                         value={localData.settings.wallpaper} 
                         onChange={e => setLocalData({...localData, settings: {...localData.settings, wallpaper: e.target.value}})} 
                         placeholder="例如: https://source.unsplash.com/random/1920x1080"
+                        className="h-9"
                     />
                 </div>
               )}
@@ -467,8 +465,8 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
                         <span className="text-xs text-muted-foreground">共加载 {localData.settings.wallpaperList?.length || 0} 张壁纸</span>
                       </div>
                     </div>
-                    <Button size="sm" variant="secondary" onClick={onRefreshWallpaper} title="随机切换一张本地壁纸">
-                      <Shuffle className="h-3.5 w-3.5 mr-1.5" /> 随机切换
+                    <Button size="sm" variant="secondary" onClick={onRefreshWallpaper} title="随机切换一张本地壁纸" className="h-9">
+                      <Shuffle className="h-4 w-4 mr-2" /> 随机切换
                     </Button>
                   </div>
                   <p className="text-[10px] text-muted-foreground px-1">
@@ -480,14 +478,14 @@ export function SettingsDialog({ data, onSave, isSaving, onRefreshWallpaper }: S
           </TabsContent>
 
           <TabsContent value="github" className="space-y-4 py-4 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
-            <div className="space-y-2"><Label>Token</Label><Input type="password" value={ghConfig.token} onChange={e => setGhConfig({...ghConfig, token: e.target.value})} placeholder="ghp_..." /></div>
+            <div className="space-y-2"><Label>Token</Label><Input type="password" value={ghConfig.token} onChange={e => setGhConfig({...ghConfig, token: e.target.value})} placeholder="ghp_..." className="h-9" /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>用户名</Label><Input value={ghConfig.owner} onChange={e => setGhConfig({...ghConfig, owner: e.target.value})} placeholder="GitHub Username" /></div>
-              <div className="space-y-2"><Label>仓库名</Label><Input value={ghConfig.repo} onChange={e => setGhConfig({...ghConfig, repo: e.target.value})} placeholder="Repository Name" /></div>
+              <div className="space-y-2"><Label>用户名</Label><Input value={ghConfig.owner} onChange={e => setGhConfig({...ghConfig, owner: e.target.value})} placeholder="GitHub Username" className="h-9" /></div>
+              <div className="space-y-2"><Label>仓库名</Label><Input value={ghConfig.repo} onChange={e => setGhConfig({...ghConfig, repo: e.target.value})} placeholder="Repository Name" className="h-9" /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2"><Label>分支</Label><Input value={ghConfig.branch || ""} onChange={e => setGhConfig({...ghConfig, branch: e.target.value})} placeholder="main" /></div>
-              <div className="space-y-2"><Label>文件路径</Label><Input value={ghConfig.path} onChange={e => setGhConfig({...ghConfig, path: e.target.value})} placeholder="public/data.json" /></div>
+               <div className="space-y-2"><Label>分支</Label><Input value={ghConfig.branch || ""} onChange={e => setGhConfig({...ghConfig, branch: e.target.value})} placeholder="main" className="h-9" /></div>
+              <div className="space-y-2"><Label>文件路径</Label><Input value={ghConfig.path} onChange={e => setGhConfig({...ghConfig, path: e.target.value})} placeholder="public/data.json" className="h-9" /></div>
             </div>
           </TabsContent>
         </Tabs>
