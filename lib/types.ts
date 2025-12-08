@@ -16,7 +16,7 @@ export interface Category {
 export interface SiteSettings {
   title: string;
   wallpaper: string;
-  wallpaperType: 'custom' | 'local' | 'bing';
+  wallpaperType: 'custom' | 'local' | 'bing' | 'url';
   wallpaperList: string[];
   blurLevel: 'low' | 'medium' | 'high';
 }
@@ -29,7 +29,7 @@ export interface DataSchema {
 export const DEFAULT_DATA: DataSchema = {
   settings: {
     title: "Clean Nav",
-    wallpaper: "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?auto=format&fit=crop&q=80&w=1920",
+    wallpaper: "", 
     wallpaperType: 'local',
     wallpaperList: [],
     blurLevel: 'medium'

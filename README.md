@@ -1,3 +1,29 @@
+<div align="center">
+  <img src="./public/icon/logo.png" width="120" height="120" alt="Clean Home Logo">
+  <h1>Clean Home</h1>
+  <p>
+    <b>A minimal, fast, and beautiful personal homepage / start page.</b>
+  </p>
+  <p>极简风格个人主页 | 导航页 | 仪表盘</p>
+
+  <p>
+    <a href="https://github.com/yingxiaomo/clean-home/blob/main/LICENSE">
+      <img src="https://img.shields.io/github/license/yingxiaomo/clean-home?style=flat-square" alt="license" />
+    </a>
+    <a href="https://github.com/yingxiaomo/clean-home/stargazers">
+      <img src="https://img.shields.io/github/stars/yingxiaomo/clean-home?style=flat-square" alt="stars" />
+    </a>
+    <a href="https://github.com/yingxiaomo/clean-home/network/members">
+      <img src="https://img.shields.io/github/forks/yingxiaomo/clean-home?style=flat-square" alt="forks" />
+    </a>
+  </p>
+
+  <p>
+    <a href="https://nav.ovoxo.cc">🔴 Live Demo (演示地址)</a>
+  </p>
+</div>
+
+
 # Clean Nav - 极简静态导航页
 
 基于 Next.js + Shadcn/ui + Tailwind CSS 构建的极简导航页，**可直接设为浏览器主页**。支持自定义壁纸，并利用 GitHub API 实现无服务器数据同步。

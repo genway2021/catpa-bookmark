@@ -20,7 +20,7 @@ export function GeneralTab({ localData, setLocalData, onRefreshWallpaper }: Gene
       <div className="space-y-3 border border-border/50 p-4 rounded-xl bg-muted/30">
         <Label>壁纸模式</Label>
         <div className="flex gap-2">
-          {(['local', 'custom', 'bing'] as const).map(mode => (
+          {(['local', 'custom', 'url', 'bing'] as const).map(mode => (
             <Button 
               key={mode} 
               variant={localData.settings.wallpaperType === mode ? "default" : "outline"} 
@@ -28,7 +28,7 @@ export function GeneralTab({ localData, setLocalData, onRefreshWallpaper }: Gene
               onClick={() => setLocalData({...localData, settings: {...localData.settings, wallpaperType: mode}})} 
               className="flex-1 capitalize h-9"
             >
-              {mode === 'local' ? '本地' : mode === 'custom' ? '自定义 API' : 'Bing'}
+              {mode === 'local' ? '本地' : mode === 'custom' ? 'API' : mode === 'url' ? '网络图片' : 'Bing'}
             </Button>
           ))}
         </div>
@@ -40,6 +40,18 @@ export function GeneralTab({ localData, setLocalData, onRefreshWallpaper }: Gene
                   value={localData.settings.wallpaper} 
                   onChange={e => setLocalData({...localData, settings: {...localData.settings, wallpaper: e.target.value}})} 
                   placeholder="例如: https://source.unsplash.com/random/1920x1080"
+                  className="h-9"
+              />
+          </div>
+        )}
+
+        {localData.settings.wallpaperType === 'url' && (
+          <div className="space-y-2 animate-in fade-in">
+              <Label>图片链接</Label>
+              <Input 
+                  value={localData.settings.wallpaper} 
+                  onChange={e => setLocalData({...localData, settings: {...localData.settings, wallpaper: e.target.value}})} 
+                  placeholder="请输入图片直链 (例如: https://example.com/bg.jpg)"
                   className="h-9"
               />
           </div>
