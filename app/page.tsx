@@ -1,215 +1,38 @@
-"use client";
+import fs from 'fs';
+import path from 'path';
+import HomeClient from '@/components/home-client';
 
-import { useEffect, useState } from "react";
-import { ClockWidget } from "@/components/nav/clock";
-import { SearchBar } from "@/components/nav/search-bar";
-import { LinkGrid } from "@/components/nav/link-grid";
-import { SettingsDialog } from "@/components/nav/settings-dialog";
-import { DataSchema, DEFAULT_DATA, Category } from "@/lib/types";
-import { loadDataFromGithub, saveDataToGithub, GITHUB_CONFIG_KEY, GithubConfig } from "@/lib/github";
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
-export default function Home() {
-  const [data, setData] = useState<DataSchema>(DEFAULT_DATA);
-  const [saving, setSaving] = useState(false);
-  const [currentWallpaper, setCurrentWallpaper] = useState(DEFAULT_DATA.settings.wallpaper); 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+const MAX_WALLPAPERS = 10; 
 
-  useEffect(() => {
-    console.log(
-      "%c by %c YingXiaoMo ",
-      "background: #6B7280; color: #fff; padding: 4px 8px; border-radius: 4px 0 0 4px; font-weight: bold;",
-      "background: #3b82f6; color: #fff; padding: 4px 8px; border-radius: 0 4px 4px 0; font-weight: bold;"
-    );
-    console.log(
-      `%c
-      __  __  _               __  __       
-      \\ \\/ / (_)  __ _   ___ |  \\/  |  ___ 
-       \\  /  | | / _\` | / _ \\| |\\/| | / _ \\
-       /  \\  | || (_| || (_) | |  | || (_) |
-      /_/\\_\\ |_| \\__,_| \\___/|_|  |_| \\___/
-      `,
-      "color: #3b82f6; font-weight: bold;"
-    );
-    console.log("%c✨ 欢迎来到我的导航页 | 项目已开源", "color: #3b82f6;");
-    console.log("%cGithub: https://github.com/yingxiaomo/nav", "color: #aaa; font-size: 12px; font-family: monospace;");
-    console.log("%c主页: https://ovoxo.cc", "color: #aaa; font-size: 12px; font-family: monospace;");
+export default function Page() {
+  let wallpapersBase64: string[] = [];
 
-    async function initData() {
-      try {
-        let loadedData = DEFAULT_DATA;
-        const storedConfig = localStorage.getItem(GITHUB_CONFIG_KEY);
-        let loadedFromGithub = false;
-        
-        if (storedConfig) {
-          const config: GithubConfig = JSON.parse(storedConfig);
-          if (config.token) {
-            const ghData = await loadDataFromGithub(config);
-            if (ghData) {
-              loadedData = ghData;
-              loadedFromGithub = true;
-            }
-          }
-        }
-
-        if (!loadedFromGithub) {
-          try {
-            const res = await fetch("/data.json");
-            if (res.ok) {
-              loadedData = await res.json();
-            }
-          } catch (e) {
-            console.log("No local data.json found.");
-          }
-        }
-
-        setData(loadedData);
-        initWallpaper(loadedData);
-
-      } catch (err) {
-        console.error("Initialization error", err);
-      } 
-    }
-    initData();
-  }, []);
-
-  const initWallpaper = async (cfg: DataSchema) => {
-    const { wallpaperType, wallpaper, wallpaperList } = cfg.settings;
-
-    if (wallpaperType === 'local' && wallpaperList && wallpaperList.length > 0) {
-      const randomImg = wallpaperList[Math.floor(Math.random() * wallpaperList.length)];
-      setCurrentWallpaper(randomImg);
-    } else if (wallpaperType === 'bing') {
-      setCurrentWallpaper(`https://bing.img.run/1920x1080.php?t=${new Date().getTime()}`); 
-    } else {
-      setCurrentWallpaper(wallpaper);
-    }
-  };
-
-  const handleSave = async (newData: DataSchema) => {
-    setSaving(true);
-    try {
-      setData(newData);
-      initWallpaper(newData);
-
-      const storedConfig = localStorage.getItem(GITHUB_CONFIG_KEY);
-      if (!storedConfig) {
-        toast.success("本地已更新 (未同步 GitHub)");
-        setSaving(false);
-        setHasUnsavedChanges(false);
-        return;
-      }
-      const config: GithubConfig = JSON.parse(storedConfig);
-      if (!config.token) {
-        setSaving(false);
-        setHasUnsavedChanges(false);
-        return;
-      }
-      const success = await saveDataToGithub(config, newData);
-      if (success) {
-        toast.success("同步成功！");
-        setHasUnsavedChanges(false);
-      } else {
-        toast.error("同步失败");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("保存时发生错误");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleReorder = (newCategories: Category[]) => {
-    const newData = { ...data, categories: newCategories };
-    setData(newData);
-    setHasUnsavedChanges(true);
-  };
-
-  const getFilteredCategories = () => {
-    if (!searchQuery) return data.categories;
+  try {
+    const wallpaperDir = path.join(process.cwd(), 'public/wallpapers');
     
-    return data.categories.map(cat => ({
-        ...cat,
-        links: cat.links.filter(l => 
-            l.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            l.url.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    })).filter(cat => cat.links.length > 0);
-  };
+    if (fs.existsSync(wallpaperDir)) {
+      const files = fs.readdirSync(wallpaperDir);
+      const imageFiles = files.filter(file => 
+        ['.jpg', '.jpeg', '.png', '.webp', '.svg'].includes(path.extname(file).toLowerCase())
+      );
 
-  const displayCategories = getFilteredCategories();
+      const shuffled = imageFiles.sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, MAX_WALLPAPERS);
 
-  const bgStyle = {
-    backgroundImage: `url(${currentWallpaper})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  };
-
-  return (
-    <main 
-      className="relative min-h-screen w-full overflow-hidden flex flex-col items-center p-6 md:p-12"
-      style={bgStyle}
-    >
+      wallpapersBase64 = selected.map(file => {
+        const filePath = path.join(wallpaperDir, file);
+        const fileBuffer = fs.readFileSync(filePath);
+        const ext = path.extname(file).toLowerCase().replace('.', '');
+        const mimeType = ext === 'svg' ? 'image/svg+xml' : `image/${ext}`;
+        return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+      });
       
-      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center shrink-0 mt-10 md:mt-20">
-          <div className="flex flex-col items-center w-full">
-            <ClockWidget />
-            <SearchBar onLocalSearch={setSearchQuery} />
-          </div>
-      </div>
-      
-      <div className="flex-grow" /> 
+      console.log(`[Build] 已自动打包 ${wallpapersBase64.length} 张壁纸`);
+    }
+  } catch (error) {
+    console.error('[Build] 读取壁纸失败:', error);
+  }
 
-      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center mb-10"> 
-          <LinkGrid 
-            categories={displayCategories} 
-            onReorder={searchQuery ? undefined : handleReorder}
-          />
-      </div>
-
-      <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${
-        hasUnsavedChanges ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
-      }`}>
-        <Button 
-          onClick={() => handleSave(data)} 
-          disabled={saving}
-          className="rounded-full shadow-2xl bg-primary/90 backdrop-blur text-primary-foreground px-8 py-6 h-auto text-base font-medium hover:scale-105 transition-transform border border-white/10"
-        >
-          {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-          保存更改
-        </Button>
-      </div>
-
-      <div>
-        <SettingsDialog 
-          data={data} 
-          onSave={handleSave} 
-          isSaving={saving}
-          onRefreshWallpaper={() => initWallpaper(data)}
-        />
-      </div>
-
-      <footer className="absolute bottom-2 left-0 w-full text-center z-0">
-        <p className="text-[10px] text-white/30 font-light tracking-widest font-mono select-none">
-          © 2025 Clean Nav · Designed by{' '}
-          <a 
-            href="https://github.com/YingXiaoMo/clean-nav" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white/80 transition-colors cursor-pointer hover:underline underline-offset-4 decoration-white/30"
-          >
-            YingXiaoMo
-          </a>
-        </p>
-      </footer>
-      
-      <Toaster position="top-center" />
-    </main>
-  );
+  return <HomeClient initialWallpapers={wallpapersBase64} />;
 }
