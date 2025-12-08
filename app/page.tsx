@@ -14,9 +14,8 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [data, setData] = useState<DataSchema>(DEFAULT_DATA);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [currentWallpaper, setCurrentWallpaper] = useState(""); 
+  const [currentWallpaper, setCurrentWallpaper] = useState(DEFAULT_DATA.settings.wallpaper); 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -73,9 +72,7 @@ export default function Home() {
 
       } catch (err) {
         console.error("Initialization error", err);
-      } finally {
-        setLoading(false);
-      }
+      } 
     }
     initData();
   }, []);
@@ -153,14 +150,6 @@ export default function Home() {
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <Loader2 className="animate-spin h-8 w-8" />
-      </div>
-    );
-  }
 
   return (
     <main 

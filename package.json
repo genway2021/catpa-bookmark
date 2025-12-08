@@ -1,7 +1,26 @@
 {
   "name": "clean-nav",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "description": "A minimalist, serverless navigation startpage built with Next.js and Tailwind CSS. Syncs data via GitHub API.",
+  "keywords": [
+    "nextjs",
+    "react",
+    "tailwindcss",
+    "navigation",
+    "startpage",
+    "dashboard",
+    "github-api",
+    "serverless",
+    "bookmark-manager",
+    "shadcn-ui"
+  ],
+  "homepage": "https://nav.ovoxo.cc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YingXiaoMo/clean-nav.git"
+  },
+  "license": "MIT",
   "scripts": {
     "scan": "node scripts/scan-wallpapers.mjs",
     "dev": "npm run scan && next dev",
