@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Clean Nav - 极简 GitHub 风格导航页",
     description: "免费、开源、无服务器。利用 GitHub API 同步数据的极简浏览器主页。",
-    url: "https://nav.ovoxo.cc",
+    url: "https://ovoxo.cc",
     siteName: "Clean Nav",
     locale: "zh_CN",
     type: "website",

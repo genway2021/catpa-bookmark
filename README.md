@@ -39,21 +39,58 @@
    - **自动识别**：自动抓取链接标题和图标。
    - **拖拽排序**：在设置面板中，支持通过拖拽调整分类顺序。
    - **图标库**：内置 400+ 精选功能性图标，支持自定义图标。
-## 🚀 快速开始
 
-### 1. Fork 项目
+## ☁️ 极速上手 (无需部署)
+如果你不想购买服务器或折腾 Docker，你可以直接使用我的演示站，并将数据存储在你自己的 GitHub 私有仓库 中。
+#### 你的数据只会在 浏览器 <-> GitHub 之间传输，演示站无法读取你的隐私数据。
 
-点击仓库右上角的 **Fork** 按钮，将此项目复制到你自己的 GitHub 账户下。这是实现数据同步的关键一步。
+## 1. 创建数据仓库 (存放数据)
+我们需要一个地方来存你的书签和配置。按照以下步骤创建 GitHub 仓库：
+1. 登录 GitHub，点击右上角的 `+`，选择 `New repository`。
+2. 填写仓库名称，例如 `my-nav-data`。
+3. 关键步骤：选择 `Private`（私有）。这能确保只有你自己能看到你的书签。
+4. 勾选 `Add a README file`（初始化仓库，这很重要，否则没有 `main` 分支）。
+5. 点击 `Create repository`。
 
-### 2. 克隆到本地
+## 2. 获取访问令牌 (Access Token)
+我们需要一把“钥匙”来让网页读写你的仓库。请按照以下步骤生成访问令牌：
+1. 访问 GitHub [Token 设置页面](https://github.com/settings/tokens)。
+2. 填写备注，例如 `clean-nav-sync`。
+3. 设置 `Expiration` 为 `No expiration`（永不过期），以免以后需要重新配置。
+4. 在 `Select scopes (权限设置)` 中，勾选 `repo`（完全控制私有仓库）。
+5. 点击底部的 `Generate token` 按钮。
+6. 复制生成的令牌（以 `ghp_` 开头的字符串）它等于你的密码，任何拿到它的人都可以随意修改你仓库的内容，务必妥善保存，关闭页面后，你将无法再看到这个令牌。
 
-将你 Fork 后的仓库克隆到本地（将 `your-username` 替换为你的 GitHub 用户名）:
+
+## 3. 在网页中配置
+1. 打开 [Clean Nav 演示站](https://nav.ovoxo.cc)。
+2. 点击右下角的 `设置 (⚙️)` 图标，切换到 `云同步` 标签。
+3. 按照以下表格填写配置：
+
+| 选项         | 说明                        | 示例填写                  |
+|--------------|-----------------------------|---------------------------|
+| Token        | 刚才复制的 `ghp_...` 令牌   | `ghp_AbC123...`           |
+| 用户名       | 你的 GitHub 账号名          | `your-username`           |
+| 仓库名       | 第一步创建的私有仓库名      | `my-nav-data`             |
+| 分支         | 默认分支，通常是 `main`     | `main`                    |
+| 文件路径     | 存数据的文件名，无需手动创建 | `data.json`               |
+
+4. 点击 `保存`。
+
+## 4. 完成配置
+🎉 大功告成！你现在可以添加一个书签并再次点击保存，数据就会自动写入你的私有仓库了。以后无论你在哪台电脑访问演示站，只要填入这套配置，你的导航页就回来了。
+
+
+
+
+## ☁️ 本地开发
+ 1. Fork 项目
+ 2. 将你 Fork 后的仓库克隆到本地（将 `your-username` 替换为你的 GitHub 用户名）:
 ```bash
-git clone https://github.com/your-username/clean-nav.git
-cd clean-nav
+git clone https://github.com/your-username/nav.git
+cd nav
 ```
-
-### 3. 安装与运行
+ 3. 安装与运行
 
 ```bash
 npm install
@@ -84,7 +121,57 @@ npm run dev
 
 现在，你在网页上进行的任何修改都会直接同步到你的 GitHub 仓库中！
 
-🔐 **安全提示**: 您的 GitHub Token **只会被安全地存储在您浏览器本地的缓存** 中，它永远不会被上传到任何服务器。这意味着只有您自己能接触到这个 Token，他人无法获取，非常安全！但是更换浏览器或者清除缓存后需要重新输入。
+## 🐳 Docker 部署
+
+如果您更习惯使用 Docker 进行部署，可以使用以下方法。
+
+### 1. 使用 Docker Hub 镜像 (推荐)
+
+直接运行以下命令即可启动服务：
+
+```bash
+docker run -d \
+  -p 20261:20261 \
+  --name clean-nav \
+  --restart always \
+  yingxiaomo/clean-nav:latest
+```
+
+启动后，访问 `http://localhost:3000` 即可使用。
+
+### 2. 使用 Docker Compose
+
+创建 `docker-compose.yml` 文件：
+
+```yaml
+version: '3'
+services:
+  clean-nav:
+    image: yingxiaomo/clean-nav:latest
+    container_name: clean-nav
+    ports:
+      - "20261:20261"
+    restart: always
+```
+
+然后运行：
+```bash
+docker-compose up -d
+```
+
+### 3. 本地构建
+
+如果您对源码进行了修改，可以构建自己的镜像：
+
+```bash
+# 构建镜像
+docker build -t clean-nav .
+
+# 运行容器
+docker run -d -p 3000:3000 --name clean-nav clean-nav
+```
+
+🔐 **安全提示**: 您的 GitHub Token **只会被安全地存储在您浏览器本地的缓存** 中，它不会被上传到任何服务器。这意味着只有您自己能接触到这个 Token，他人无法获取，非常安全！但是更换浏览器或者清除缓存后需要重新输入。
 
 
 
@@ -100,15 +187,6 @@ npm run dev
     *   点击导航页右下角的**设置 (⚙️)** 图标。
     *   在 **链接管理** 标签页下，找到 **导入浏览器书签** 区域，点击并选择您刚才导出的 HTML 文件即可。
 
-
-## 🎨 自定义本地壁纸
-
-项目支持使用本地图片作为壁纸，并具备极速加载和随机切换功能。
-
-### 使用方法
-1. 将你的图片文件放入 `public/wallpapers` 目录。
-2. 支持格式：`.jpg`, `.png`, `.webp`, `.gif`, `.svg`。
-3. 重新运行开发服务器或构建项目，系统会自动扫描该目录。
 
 ### ⚠️ 注意事项与构建策略
 为了保证页面加载性能，构建脚本包含以下策略：

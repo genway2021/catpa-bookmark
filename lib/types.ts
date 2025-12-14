@@ -37,6 +37,7 @@ export interface SiteSettings {
   blurLevel: 'low' | 'medium' | 'high';
   maxPackedWallpapers?: number;
   showFeatures?: boolean; 
+  homeLayout?: 'folder' | 'list';
 }
 
 export interface DataSchema {
@@ -54,7 +55,8 @@ export const DEFAULT_DATA: DataSchema = {
     wallpaperList: [],
     blurLevel: 'medium',
     maxPackedWallpapers: 10,
-    showFeatures: true
+    showFeatures: true,
+    homeLayout: 'folder'
   },
   categories: [],
   todos: [],

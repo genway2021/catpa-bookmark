@@ -21,6 +21,47 @@ export function GeneralTab({ localData, setLocalData, onRefreshWallpaper, onSave
         <Input value={localData.settings.title} onChange={e => setLocalData({...localData, settings: {...localData.settings, title: e.target.value}})} className="h-9" />
       </div>
 
+      <div className="space-y-2">
+        <Label>首页布局</Label>
+        <div className="flex gap-2">
+          <Button 
+            variant={localData.settings.homeLayout === 'list' ? "outline" : "default"} 
+            size="sm" 
+            onClick={() => {
+              const newData = {
+                ...localData,
+                settings: { ...localData.settings, homeLayout: 'folder' as const },
+              };
+              setLocalData(newData);
+              if (onSave) onSave(newData);
+            }} 
+            className="flex-1 h-9"
+          >
+            文件夹模式
+          </Button>
+          <Button 
+            variant={localData.settings.homeLayout === 'list' ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => {
+              const newData = {
+                ...localData,
+                settings: { ...localData.settings, homeLayout: 'list' as const },
+              };
+              setLocalData(newData);
+              if (onSave) onSave(newData);
+            }} 
+            className="flex-1 h-9"
+          >
+            直显模式
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground px-1">
+          {localData.settings.homeLayout === 'list' 
+            ? "直接在首页显示所有收藏内容，隐藏时钟" 
+            : "使用经典的文件夹图标布局"}
+        </p>
+      </div>
+
       <div className="flex items-center justify-between border border-border/50 p-4 rounded-xl bg-muted/30">
         <div className="space-y-0.5 flex flex-col">
           <Label className="flex items-center gap-2">

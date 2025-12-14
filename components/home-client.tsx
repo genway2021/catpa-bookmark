@@ -61,16 +61,6 @@ export default function HomeClient({ initialWallpapers }: HomeClientProps) {
 
   useEffect(() => {
     console.log("%c Clean Nav ", "background: #3b82f6; color: #fff; border-radius: 4px; font-weight: bold;");
-    console.log(
-      `%c
-      __  __  _               __  __       
-      \\ \\/ / (_)  __ _   ___ |  \\/  |  ___ 
-       \\  /  | | / _\` | / _ \\| |\\/| | / _ \\
-       /  \\  | || (_| || (_) | |  | || (_) |
-      /_/\\_\\ |_| \\__,_| \\___/|_|  |_| \\___/
-      `,
-      "color: #3b82f6; font-weight: bold;"
-    );
     console.log("%c✨ 欢迎来到我的导航页 | 项目已开源", "color: #3b82f6;");
     console.log("%cGithub: https://github.com/yingxiaomo/nav", "color: #aaa; font-size: 12px; font-family: monospace;");
     console.log("%c主页: https://ovoxo.cc", "color: #aaa; font-size: 12px; font-family: monospace;");
@@ -266,13 +256,13 @@ export default function HomeClient({ initialWallpapers }: HomeClientProps) {
   return (
     <main className="relative min-h-screen w-full overflow-hidden flex flex-col items-center p-6 md:p-12 animate-in fade-in duration-500">
       <div 
-        className="absolute inset-0 z-0 transition-opacity duration-700 ease-in-out bg-cover bg-center bg-no-repeat bg-gray-900"
+        className="fixed inset-0 z-0 transition-opacity duration-700 ease-in-out bg-cover bg-center bg-no-repeat bg-gray-900"
         style={{
             backgroundImage: currentWallpaper ? `url(${currentWallpaper})` : undefined,
             opacity: imgLoaded ? 1 : 0 
         }}
       />
-      <div className="absolute inset-0 z-0 bg-black/20 pointer-events-none" />
+      <div className="fixed inset-0 z-0 bg-black/20 pointer-events-none" />
       <div className="fixed top-4 right-4 z-50 flex gap-2">
         <SettingsDialog 
           data={data} 
@@ -285,12 +275,11 @@ export default function HomeClient({ initialWallpapers }: HomeClientProps) {
 
       <div className="relative z-10 w-full flex flex-col items-center flex-grow">
           
-          <div className="w-full max-w-5xl flex flex-col items-center shrink-0 mt-10 md:mt-20">
+          <div className={`w-full max-w-5xl flex flex-col items-center shrink-0 ${data.settings.homeLayout === 'list' ? 'mt-8' : 'mt-10 md:mt-20'}`}>
               <div className="flex flex-col items-center w-full">
-                <ClockWidget />
-                <SearchBar onLocalSearch={setSearchQuery} />
+                {data.settings.homeLayout !== 'list' && <ClockWidget />}
                 
-                {!searchQuery && data.settings.showFeatures !== false && (
+                {data.settings.homeLayout === 'list' && !searchQuery && data.settings.showFeatures !== false && (
                   <FeaturesLauncher 
                     todos={data.todos || []}
                     notes={data.notes || []}
@@ -298,16 +287,29 @@ export default function HomeClient({ initialWallpapers }: HomeClientProps) {
                     onNotesUpdate={handleNotesUpdate}
                   />
                 )}
-
+                
+                <div className={data.settings.homeLayout === 'list' ? "mt-8 w-full" : "w-full"}>
+                  <SearchBar onLocalSearch={setSearchQuery} />
+                </div>
+                
+                {data.settings.homeLayout !== 'list' && !searchQuery && data.settings.showFeatures !== false && (
+                  <FeaturesLauncher 
+                    todos={data.todos || []}
+                    notes={data.notes || []}
+                    onTodosUpdate={handleTodosUpdate}
+                    onNotesUpdate={handleNotesUpdate}
+                  />
+                )}
               </div>
           </div>
           
-          <div className="flex-grow" /> 
+          {data.settings.homeLayout !== 'list' && <div className="flex-grow" />} 
 
-          <div className="w-full max-w-5xl flex flex-col items-center mb-10"> 
+          <div className={`w-full max-w-5xl flex flex-col items-center ${data.settings.homeLayout === 'list' ? 'mt-8 mb-20' : 'mb-10'}`}> 
              <LinkGrid 
                 categories={displayCategories} 
                 onReorder={searchQuery ? undefined : handleReorder}
+                displayMode={data.settings.homeLayout}
              />
           </div>
 

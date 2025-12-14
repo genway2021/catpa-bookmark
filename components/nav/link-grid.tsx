@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useId, memo } from "react";
 import { Category, LinkItem } from "@/lib/types";
-import { X, FolderOpen, ChevronLeft } from "lucide-react";
+import { X, FolderOpen, ChevronLeft, ChevronDown } from "lucide-react";
 import * as Icons from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,6 +28,7 @@ interface LinkGridProps {
   categories: Category[];
   onReorder?: (categories: Category[]) => void;
   onOpenChange?: (open: boolean) => void;
+  displayMode?: 'folder' | 'list';
 }
 
 const IconRender = memo(({ name, className }: { name: string; className?: string }) => {
@@ -51,7 +52,6 @@ const IconRender = memo(({ name, className }: { name: string; className?: string
   }
 
   const iconName = name as keyof typeof Icons;
-  // Ensure the icon exists AND is a function (React component), not an object/constant
   const isValidIcon = name && !error && /^[A-Z]/.test(name) && Boolean(Icons[iconName]);
   
   const IconComponent = isValidIcon ? Icons[iconName] : Icons.FolderOpen;
@@ -117,18 +117,93 @@ function SortableCard({ category, onClick }: { category: Category; onClick: () =
   );
 }
 
-export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps) {
+// Re-defined LinkItemCard component
+const LinkItemCard = ({ item, onClick }: { item: LinkItem, onClick?: (item: LinkItem) => void }) => {
+    const isFolder = item.type === 'folder';
+                     
+    if (isFolder) {
+        return (
+           <div
+               onClick={() => onClick && onClick(item)}
+               className="group block relative cursor-pointer"
+           >
+               <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-colors">
+                   <div className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center border border-white/20 overflow-hidden bg-yellow-500/10 text-yellow-500">
+                       <IconRender name={item.icon || "FolderOpen"} className="h-4 w-4" />
+                   </div>
+                   <div className="min-w-0 flex-1">
+                       <h4 className="text-white font-medium text-sm" title={item.title}>
+                           {item.title}
+                       </h4>
+                   </div>
+                   <ChevronLeft className="h-4 w-4 text-white/50 rotate-180" />
+               </div>
+           </div>
+        );
+    }
+
+   return (
+       <a
+       href={item.url}
+       target="_blank"
+       rel="noopener noreferrer"
+       className="group block relative"
+       >
+       <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/10 transition-colors">
+           <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center border border-white/20 overflow-hidden ${
+           (item.icon || "").startsWith('http') ? 'bg-white/20 p-1.5' : 'bg-blue-500/10 text-blue-500'
+           }`}>
+           <IconRender name={item.icon || "Link"} className={(item.icon || "").startsWith('http') ? "w-full h-full" : "h-4 w-4"} />
+           </div>
+           <div className="min-w-0 flex-1">
+           <h4 className="text-white font-medium text-sm" title={item.title}>
+               {item.title}
+           </h4>
+           </div>
+       </div>
+       </a>
+   );
+};
+
+// Recursive component to render folder content in list mode
+const RenderFolderContent = ({ items, onFolderClick }: { 
+    items: LinkItem[]; 
+    onFolderClick: (item: LinkItem) => void;
+}) => {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {items.map((item) => {
+        if (item.type === 'folder') {
+          return (
+            <LinkItemCard 
+              key={item.id} 
+              item={item} 
+              onClick={() => onFolderClick(item)} 
+            />
+          );
+        }
+
+        return (
+          <LinkItemCard key={item.id} item={item} />
+        );
+      })}
+    </div>
+  );
+};
+
+
+export function LinkGrid({ categories, onReorder, onOpenChange, displayMode = 'folder' }: LinkGridProps) {
 
   const dndContextId = useId();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null); // This is the ID of the TOP-LEVEL Category
   const selectedCategory = categories.find((c) => c.id === selectedId);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // Stack for folder navigation: LinkItem[]
-  const [navStack, setNavStack] = useState<LinkItem[]>([]);
+  const [navStack, setNavStack] = useState<LinkItem[]>([]); // Stack for modal internal navigation
+  const [allCollapsedState, setAllCollapsedState] = useState<Record<string, boolean>>({}); // For list mode internal collapse
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -150,7 +225,7 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
     if (selectedId) {
       document.body.style.overflow = "hidden";
       onOpenChange?.(true);
-      setNavStack([]); // Reset stack when opening a new category
+      // setNavStack([]); // Don't reset stack here, rely on close to reset or manual reset if needed
     } else {
       document.body.style.overflow = "auto";
       onOpenChange?.(false);
@@ -162,29 +237,89 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
     };
   }, [selectedId, onOpenChange]);
 
-  const currentItems = navStack.length > 0 
+
+  // Content for the modal
+  const modalCurrentItems = navStack.length > 0 
     ? navStack[navStack.length - 1].children || [] 
     : selectedCategory?.links || [];
 
-  const currentTitle = navStack.length > 0
+  const modalCurrentTitle = navStack.length > 0
     ? navStack[navStack.length - 1].title
     : selectedCategory?.title;
 
-  const currentIcon = navStack.length > 0
+  const modalCurrentIcon = navStack.length > 0
     ? navStack[navStack.length - 1].icon || "FolderOpen"
     : selectedCategory?.icon || "FolderOpen";
 
-  const handleBack = () => {
+  const handleModalBack = () => {
       setNavStack(prev => prev.slice(0, -1));
   };
 
-  const handleFolderClick = (folder: LinkItem) => {
-      setNavStack(prev => [...prev, folder]);
+  // This is the onClick for LinkItemCards *inside* the modal (folder mode)
+  const handleModalFolderClick = (item: LinkItem) => {
+      if (item.type === 'folder') {
+          setNavStack(prev => [...prev, item]);
+      }
   };
 
-  return (
-    <>
-      {mounted ? (
+  const toggleFolder = (id: string) => {
+    setAllCollapsedState(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+
+  // Main content rendering based on displayMode
+  const renderMainContent = () => {
+    if (displayMode === 'list') {
+      return (
+        <div className="w-full space-y-4 px-4 pb-10">
+           {categories.map(cat => {
+              const isCollapsed = allCollapsedState[cat.id];
+              return (
+              <div key={cat.id} className="bg-black/20 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden">
+                  <div 
+                    onClick={() => toggleFolder(cat.id)}
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-colors"
+                  >
+                     <div className="flex items-center gap-3">
+                        <IconRender name={cat.icon || "FolderOpen"} className="h-5 w-5 text-yellow-200" />
+                        <h3 className="text-white font-medium">{cat.title}</h3>
+                     </div>
+                     <ChevronDown className={`h-4 w-4 text-white/50 transition-transform ml-auto ${isCollapsed ? 'rotate-90' : 'rotate-0'}`} />
+                  </div>
+                  
+                  <motion.div
+                    initial={false}
+                    animate={{ height: isCollapsed ? 0 : "auto", opacity: isCollapsed ? 0 : 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                      <div className="p-4 pt-0">
+                          {cat.links.length > 0 ? (
+                            <RenderFolderContent 
+                                items={cat.links} 
+                                onFolderClick={(item) => {
+                                  setSelectedId(cat.id);
+                                  setNavStack([item]);
+                                }}
+                            />
+                          ) : (
+                            <div className="col-span-full py-4 text-center text-sm text-white/30">
+                                空文件夹
+                            </div>
+                          )}
+                      </div>
+                  </motion.div>
+              </div>
+           );})}
+        </div>
+      );
+    }
+
+    // Default Folder Mode
+    return mounted ? (
         <DndContext id={dndContextId} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="w-full max-w-5xl mx-auto pb-6 px-4 relative z-30">
             <SortableContext items={categories.map(c => c.id)} strategy={rectSortingStrategy}>
@@ -204,7 +339,12 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
             ))}
           </div>
         </div>
-      )}
+      );
+  };
+
+  return (
+    <>
+      {renderMainContent()}
 
       <AnimatePresence>
         {selectedId && selectedCategory && (
@@ -227,15 +367,15 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
               <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 shrink-0 bg-transparent">
                 <div className="flex items-center gap-3">
                   {navStack.length > 0 && (
-                      <button onClick={handleBack} className="p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors mr-1">
+                      <button onClick={handleModalBack} className="p-1.5 rounded-full bg-muted/50 hover:bg-muted transition-colors mr-1">
                           <ChevronLeft className="h-4 w-4" />
                       </button>
                   )}
                   <div className="p-1.5 rounded-xl bg-yellow-500/20 text-yellow-200">
-                     <IconRender name={currentIcon} className="h-5 w-5" />
+                     <IconRender name={modalCurrentIcon} className="h-5 w-5" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground tracking-tight">
-                    {currentTitle}
+                    {modalCurrentTitle}
                   </h2>
                 </div>
                 <button
@@ -247,7 +387,7 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
               </div>
 
               <motion.div 
-                key={navStack.length} // Force re-render/animation on navigation
+                key={navStack.length} 
                 initial={{ opacity: 0, x: 10 }} 
                 animate={{ opacity: 1, x: 0 }} 
                 exit={{ opacity: 0, x: -10 }} 
@@ -255,55 +395,10 @@ export function LinkGrid({ categories, onReorder, onOpenChange }: LinkGridProps)
                 className="p-6 overflow-y-auto flex-1 bg-transparent [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {currentItems.map((item) => {
-                     const isFolder = item.type === 'folder';
-                     
-                     if (isFolder) {
-                         return (
-                            <div
-                                key={item.id}
-                                onClick={() => handleFolderClick(item)}
-                                className="group block relative cursor-pointer"
-                            >
-                                <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-muted border border-transparent hover:border-border/40 transition-colors">
-                                    <div className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center border border-border/40 overflow-hidden bg-yellow-500/10 text-yellow-500">
-                                        <IconRender name="FolderOpen" className="h-5 w-5" />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <h4 className="text-foreground font-medium text-sm" title={item.title}>
-                                            {item.title}
-                                        </h4>
-                                    </div>
-                                    <ChevronLeft className="h-4 w-4 text-muted-foreground rotate-180" />
-                                </div>
-                            </div>
-                         );
-                     }
-
-                    return (
-                        <a
-                        key={item.id}
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group block relative"
-                        >
-                        <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-muted border border-transparent hover:border-border/40 transition-colors">
-                            <div className={`h-10 w-10 shrink-0 rounded-lg flex items-center justify-center border border-border/40 overflow-hidden ${
-                            (item.icon || "").startsWith('http') ? 'bg-background/50 p-1.5' : 'bg-blue-500/20 text-blue-200'
-                            }`}>
-                            <IconRender name={item.icon || "Link"} className={(item.icon || "").startsWith('http') ? "w-full h-full" : "h-5 w-5"} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                            <h4 className="text-foreground font-medium text-sm" title={item.title}>
-                                {item.title}
-                            </h4>
-                            </div>
-                        </div>
-                        </a>
-                    );
-                  })}
-                  {currentItems.length === 0 && (
+                  {modalCurrentItems.map((item) => (
+                       <LinkItemCard key={item.id} item={item} onClick={handleModalFolderClick} />
+                  ))}
+                  {modalCurrentItems.length === 0 && (
                       <div className="col-span-full py-10 text-center text-muted-foreground">
                           此文件夹为空
                       </div>

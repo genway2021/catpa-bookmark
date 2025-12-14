@@ -15,7 +15,7 @@ export function ClockWidget() {
 
   if (!time) {
     return (
-      <div className="text-center text-white drop-shadow-md mb-8">
+      <div className="text-center text-white mb-8">
         <div className="text-6xl md:text-8xl font-light tracking-tighter invisible">
           00:00
         </div>
@@ -27,7 +27,7 @@ export function ClockWidget() {
   } 
 
   return (
-    <div className="text-center text-white drop-shadow-md mb-8">
+    <div className="text-center text-white mb-8">
       <div className="text-6xl md:text-8xl font-light tracking-tighter">
         {format(time, "HH:mm")}
       </div>
