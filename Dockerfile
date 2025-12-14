@@ -21,6 +21,8 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
+ENV DOCKER_BUILD=true
+
 RUN npm run build
 
 # Production image, copy all the files and run next
