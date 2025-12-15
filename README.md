@@ -103,6 +103,13 @@ npm run dev
 ### 1. 部署到 [Vercel (推荐)](https://vercel.com) / [Cloudflare Pages ](https://pages.cloudflare.com)
 
 将代码推送到你的 GitHub 仓库，然后在 Vercel 或 Cloudflare Pages 中导入该项目即可。无需特殊的环境变量配置。
+### 🌩️ Cloudflare Pages / Vercel 部署注意
+由于本项目采用了纯静态导出，在配置项目时请务必检查以下设置：
+| 平台 | 构建命令 (Build Command)|输出目录 (Output Directory)|
+|--------------|-----------------------------|---------------------------|
+| Vercel        | npm run build  | out (如果未自动识别)          |
+| Cloudflare       | npm run build          | out (必须手动填写)          |
+| Netlify       | npm run build     | out            |
 
 ### 2. 启用在线编辑功能
 
