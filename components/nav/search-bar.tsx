@@ -57,7 +57,8 @@ export function SearchBar({ onLocalSearch }: SearchBarProps) {
     e?.preventDefault();
     if (engine.url === "local") return;
     if (!query.trim()) return;
-    window.location.href = `${engine.url}${encodeURIComponent(query)}`;
+    
+    window.open(`${engine.url}${encodeURIComponent(query)}`, '_blank');
   };
 
   return (
