@@ -40,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local logs and AI context
+.1.md
+
+# editors
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -33,3 +33,6 @@ pnpm-debug.log*
 # Editor directories
 .vscode
 .idea
+
+# Local logs
+.1.md

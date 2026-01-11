@@ -18,13 +18,24 @@ interface FeaturesLauncherProps {
 export function FeaturesLauncher({ todos, notes, onTodosUpdate, onNotesUpdate }: FeaturesLauncherProps) {
   const [showTodo, setShowTodo] = useState(false);
   const [showNote, setShowNote] = useState(false);
+  const [activePanel, setActivePanel] = useState<'todo' | 'note' | null>(null);
+
+  const handleOpenTodo = () => {
+    setShowTodo(true);
+    setActivePanel('todo');
+  };
+
+  const handleOpenNote = () => {
+    setShowNote(true);
+    setActivePanel('note');
+  };
 
   return (
     <>
       <div className="flex gap-4 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
         <Button 
           variant="outline" 
-          onClick={() => setShowTodo(!showTodo)}
+          onClick={() => showTodo ? setShowTodo(false) : handleOpenTodo()}
           className={`h-12 px-6 rounded-full border-white/20 hover:bg-black/40 backdrop-blur-md text-white transition-all hover:scale-105 gap-2 ${showTodo ? 'bg-black/40 ring-2 ring-blue-500/50' : 'bg-black/20'}`}
         >
           <ListTodo className="w-5 h-5 text-blue-400" />
@@ -33,7 +44,7 @@ export function FeaturesLauncher({ todos, notes, onTodosUpdate, onNotesUpdate }:
 
         <Button 
           variant="outline" 
-          onClick={() => setShowNote(!showNote)}
+          onClick={() => showNote ? setShowNote(false) : handleOpenNote()}
           className={`h-12 px-6 rounded-full border-white/20 hover:bg-black/40 backdrop-blur-md text-white transition-all hover:scale-105 gap-2 ${showNote ? 'bg-black/40 ring-2 ring-amber-500/50' : 'bg-black/20'}`}
         >
           <NotebookPen className="w-5 h-5 text-amber-400" />
@@ -48,6 +59,8 @@ export function FeaturesLauncher({ todos, notes, onTodosUpdate, onNotesUpdate }:
           defaultWidth={400}
           defaultHeight={600}
           onClose={() => setShowTodo(false)}
+          zIndex={activePanel === 'todo' ? 101 : 100}
+          onFocus={() => setActivePanel('todo')}
         >
           <TodoWidget todos={todos} onUpdate={onTodosUpdate} />
         </ResizablePanel>
@@ -60,6 +73,8 @@ export function FeaturesLauncher({ todos, notes, onTodosUpdate, onNotesUpdate }:
           defaultWidth={600}
           defaultHeight={500}
           onClose={() => setShowNote(false)}
+          zIndex={activePanel === 'note' ? 101 : 100}
+          onFocus={() => setActivePanel('note')}
         >
           <NoteWidget notes={notes} onUpdate={onNotesUpdate} />
         </ResizablePanel>

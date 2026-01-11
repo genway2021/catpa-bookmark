@@ -14,6 +14,8 @@ interface ResizablePanelProps {
   title: string;
   icon: React.ReactNode;
   onClose?: () => void;
+  zIndex?: number;
+  onFocus?: () => void;
 }
 
 export function ResizablePanel({ 
@@ -24,7 +26,9 @@ export function ResizablePanel({
   minHeight = 400,
   title,
   icon,
-  onClose
+  onClose,
+  zIndex = 100,
+  onFocus
 }: ResizablePanelProps) {
   const [rect, setRect] = useState<{x: number, y: number, w: number, h: number} | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -64,7 +68,68 @@ export function ResizablePanel({
     action: '' 
   });
 
+  useEffect(() => {
+    if (!isDragging && !isResizing) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      const { startX, startY, startRect, action } = dragRef.current;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      if (action === 'move') {
+        setRect({
+          ...startRect,
+          x: startRect.x + deltaX,
+          y: startRect.y + deltaY,
+        });
+        return;
+      }
+
+      let newX = startRect.x;
+      let newY = startRect.y;
+      let newW = startRect.w;
+      let newH = startRect.h;
+
+      if (action.includes('e')) {
+        newW = startRect.w + deltaX * 2;
+      } else if (action.includes('w')) {
+        newW = startRect.w - deltaX * 2;
+      }
+
+      if (action.includes('s')) {
+        newH = startRect.h + deltaY * 2;
+      } else if (action.includes('n')) {
+        newH = startRect.h - deltaY * 2;
+      }
+
+      newW = Math.max(minWidth, newW);
+      newH = Math.max(minHeight, newH);
+
+      const centerX = startRect.x + startRect.w / 2;
+      const centerY = startRect.y + startRect.h / 2;
+      newX = centerX - newW / 2;
+      newY = centerY - newH / 2;
+
+      setRect({ x: newX, y: newY, w: newW, h: newH });
+    };
+
+    const onMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [isDragging, isResizing, minWidth, minHeight]);
+
   const handleMouseDown = useCallback((e: React.MouseEvent, action: string) => {
+    if (onFocus) onFocus();
     if (isPinned) return;
 
     e.preventDefault();
@@ -81,67 +146,7 @@ export function ResizablePanel({
       startRect: { ...rect },
       action
     };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  }, [rect, isPinned]);
-
-  const onMouseMove = useCallback((e: MouseEvent) => {
-    e.preventDefault();
-    const { startX, startY, startRect, action } = dragRef.current;
-    const deltaX = e.clientX - startX;
-    const deltaY = e.clientY - startY;
-
-    if (action === 'move') {
-      setRect({
-        ...startRect,
-        x: startRect.x + deltaX,
-        y: startRect.y + deltaY,
-      });
-      return;
-    }
-
-    let newX = startRect.x;
-    let newY = startRect.y;
-    let newW = startRect.w;
-    let newH = startRect.h;
-
-    if (action.includes('e')) {
-      newW = startRect.w + deltaX * 2;
-    } else if (action.includes('w')) {
-      newW = startRect.w - deltaX * 2;
-    }
-
-    if (action.includes('s')) {
-      newH = startRect.h + deltaY * 2;
-    } else if (action.includes('n')) {
-      newH = startRect.h - deltaY * 2;
-    }
-
-    newW = Math.max(minWidth, newW);
-    newH = Math.max(minHeight, newH);
-
-    const centerX = startRect.x + startRect.w / 2;
-    const centerY = startRect.y + startRect.h / 2;
-    newX = centerX - newW / 2;
-    newY = centerY - newH / 2;
-
-    setRect({ x: newX, y: newY, w: newW, h: newH });
-  }, [minWidth, minHeight]);
-
-  const onMouseUp = useCallback(() => {
-    setIsDragging(false);
-    setIsResizing(false);
-    document.removeEventListener("mousemove", onMouseMove);
-    document.removeEventListener("mouseup", onMouseUp);
-  }, [onMouseMove]);
-
-  useEffect(() => {
-    return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [onMouseMove, onMouseUp]);
+  }, [rect, isPinned, onFocus]);
 
   if (!rect) return null;
 
@@ -152,14 +157,15 @@ export function ResizablePanel({
   return (
     <div 
       ref={panelRef}
+      onMouseDown={() => onFocus && onFocus()}
       className={cn(
-        "fixed flex flex-col overflow-hidden z-[100] transition-all duration-300",
+        "fixed flex flex-col overflow-hidden transition-all duration-300",
         isPinned 
           ? "dark bg-black/20 backdrop-blur-[2px] border border-white/5 shadow-none text-shadow-sm" 
           : "bg-background/80 backdrop-blur-xl border border-white/20 shadow-2xl sm:rounded-xl text-foreground",
         (isDragging || isResizing) && "transition-none select-none"
       )}
-      style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h }}
+      style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h, zIndex }}
     >
       <div 
         className={cn(

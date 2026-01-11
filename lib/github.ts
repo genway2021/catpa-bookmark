@@ -57,8 +57,13 @@ export async function saveDataToGithub(config: GithubConfig, data: DataSchema, m
       if (!Array.isArray(currentFile) && 'sha' in currentFile) {
         sha = currentFile.sha;
       }
-    } catch (e) {
-  
+    } catch (e: any) {
+      // If the file doesn't exist (404), we can proceed to create it (sha will be undefined).
+      // For other errors, we should log them, but maybe we can still try to create/update if it's a permission issue that allows writing but not reading? 
+      // Safest is to only ignore 404.
+      if (e.status !== 404) {
+        console.warn("Error checking for existing file:", e);
+      }
     }
 
 

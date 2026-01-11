@@ -32,17 +32,18 @@ export default function Page() {
         ['.jpg', '.jpeg', '.png', '.webp', '.svg'].includes(path.extname(file).toLowerCase())
       );
 
-      const shuffled = imageFiles.sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, maxWallpapers);
+      // Randomly select wallpapers using Fisher-Yates shuffle
+      for (let i = imageFiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [imageFiles[i], imageFiles[j]] = [imageFiles[j], imageFiles[i]];
+      }
+      
+      const selected = imageFiles.slice(0, maxWallpapers);
 
-      wallpapersBase64 = selected.map(file => {
-        const filePath = path.join(wallpaperDir, file);
-        const fileBuffer = fs.readFileSync(filePath);
-        const ext = path.extname(file).toLowerCase().replace('.', '');
-        const mimeType = ext === 'svg' ? 'image/svg+xml' : `image/${ext}`;
-        return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
-      });
-      console.log(`打包了 ${wallpapersBase64.length} 张壁纸`);
+      // Return paths instead of base64 content
+      wallpapersBase64 = selected.map(file => `/wallpapers/${file}`);
+      
+      console.log(`已索引 ${wallpapersBase64.length} 张壁纸路径`);
     }
   } catch (error) {
     console.error('构建预处理失败:', error);
