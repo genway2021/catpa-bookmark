@@ -1,6 +1,6 @@
 {
   "settings": {
-    "title": "Clean Nav",
+    "title": "bookmark",
     "wallpaper": "",
     "wallpaperType": "local",
     "blurLevel": "medium",
@@ -16,8 +16,8 @@
       "/wallpapers/background10.webp",
       "/wallpapers/background1.webp"
     ],
-    "showFeatures": true,
-    "homeLayout": "folder"
+    "showFeatures": false,
+    "homeLayout": "list"
   },
   "categories": [
     {
